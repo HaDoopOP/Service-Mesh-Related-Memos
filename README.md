@@ -16,11 +16,8 @@ Service mesh is analogous to the TCP/IP network stack at a functional level. In 
 Service Mesh的好处如下
 
 > Smarter, performant, and concurrent load balancing
-
 > Platform and protocol agnostic routing, with HTTP and HTTP/2 (with focus on gRPC) as requirements
-
 > Application independent routing and tracing metrics
-
 > Traffic security
 
 
@@ -35,3 +32,27 @@ service discovery 可以告诉某一个pod，它的request可以分流给哪几�
 | *SideCar Pattern* | 更费机器资源，每个pod都有额外开销  | if the proxy (sidecar) needs to be updated, the entire pod must be restarted/recreated for that change to take effect| 快 |
 | *DaemonSet Proxy Pattern* | 一个cluster用一个大的proxy，省资源 | updating one container won’t interrupt the others execution, and lowers the risk of inadvertent issues and downtime.| 慢，需要goes through a hostname resolution |
 
+
+### Service Mesh 健康的检测和警报
+
+In the service mesh architecture, services can discover each other using Istio, and route requests to one another using Envoy, In addition to load balancing and metrics.
+
+最主要的是 identifying what monitoring means for each module in the system, and then the entire system as a whole. 
+
+正常的架构是Envoy Talk to Istio, 但是访问量大了之后。可以把Istio replicated in a Kubernetes cluster。这样的话就需要加一个load balancer。每个pod去找这个 Istio的 load balancer，load balancer分发request到每个Istio pod上面去。把Istio 弄成k8s还可以有助 于better healing and monitoring。Each replica is watched by Kubernetes’ scheduler to ensure exactly N live replicas. Each replica is configured to get pinged using *Kubernetes’ health scheduler* over a short interval, e.g. every few seconds, to gauge responsiveness. If any of these checks are unsuccessful or fail to respond, the affected replica is restarted. As a result, the replica starts up fresh and re-binds with its configured control plane agent (istio agent).
+
+几点基本要求：
+> When possible, the system should self-heal.
+> The monitoring system must be able to report both the internal and external health of each module in the system.
+> Improve the system to self-heal as much as possible, and alert when self-healing is not applied or is not possible to implement.
+
+首先所有的pod要被发现，Service discovery is an important part of a service mesh system, it is a crucial service in the infrastructure automation team, given how many services it discovers in each of our data centers. Any disruption in discovery can affect routing, and if the disruption is extended to minutes, it can bring down routing for all services that discover each other using service mesh. 
+
+如果我们的整个Istio cluster都down了呢？？ 我们要确保我们可以handle all replicas are affected at once 这种情况。In such situations, we get notified about a full downtime for Istio by setting up a **higher level heartbeat**. This heartbeat is external to Kubernetes and seeks for at least one healthy and available backend behind Istio’s Kubernetes load balancer. 需要另外有一台跟k8s部署分开的server，去做一个min availability check,可以 simple HTTP ping against Istio’s load balancer in Kubernetes to ensure that at least one backend is available at all times. 这台去做min availability check的server链接了 Notification server. If consecutive execution of these heartbeats fails, an alert is sent to the notification service for the operations team to investigate further.
+
+现在我们可以确保通过K8s Health scheduler 确保data plane with Envoy proxy 是up的, 下一步是需要他们可以 successfully route requests to proxies on other nodes in the same cluster or across clusters?
+The goal of checking proxies’ running health to detect issues that can be solved by restarting the problematic container.
+
+So we need to configure a health check that ensures a full loop through the proxy with a response code that is digestible by Kubernetes’ objects, i.e. 200 response is healthy, and non 200 responses mark containers as unhealthy。 - whether the proxies are healthy and capable of routing to different domains,
+
+对于proxy是否可以route我们的信息到期待的目的地，可以在每个cluster加一个pod，里面有一个service叫做 prob service. 我们在独立于k8s外的服务器上，去链接这些prob service, 看是否能通过这个prob pod去与本cluster内部的pod去沟通，或者说cross datacenter的沟通。
