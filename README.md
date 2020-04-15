@@ -16,8 +16,11 @@ Service mesh is analogous to the TCP/IP network stack at a functional level. In 
 Service Mesh的好处如下
 
 > Smarter, performant, and concurrent load balancing
+
 > Platform and protocol agnostic routing, with HTTP and HTTP/2 (with focus on gRPC) as requirements
+
 > Application independent routing and tracing metrics
+
 > Traffic security
 
 
