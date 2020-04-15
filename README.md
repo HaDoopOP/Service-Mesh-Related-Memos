@@ -16,8 +16,11 @@ Service mesh is analogous to the TCP/IP network stack at a functional level. In 
 Service Mesh的好处如下
 
 > Smarter, performant, and concurrent load balancing
+
 > Platform and protocol agnostic routing, with HTTP and HTTP/2 (with focus on gRPC) as requirements
+
 > Application independent routing and tracing metrics
+
 > Traffic security
 
 
@@ -43,7 +46,9 @@ In the service mesh architecture, services can discover each other using Istio, 
 
 几点基本要求：
 > When possible, the system should self-heal.
+
 > The monitoring system must be able to report both the internal and external health of each module in the system.
+
 > Improve the system to self-heal as much as possible, and alert when self-healing is not applied or is not possible to implement.
 
 首先所有的pod要被发现，Service discovery is an important part of a service mesh system, it is a crucial service in the infrastructure automation team, given how many services it discovers in each of our data centers. Any disruption in discovery can affect routing, and if the disruption is extended to minutes, it can bring down routing for all services that discover each other using service mesh. 
