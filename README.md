@@ -61,3 +61,26 @@ The goal of checking proxies’ running health to detect issues that can be solv
 So we need to configure a health check that ensures a full loop through the proxy with a response code that is digestible by Kubernetes’ objects, i.e. 200 response is healthy, and non 200 responses mark containers as unhealthy。 - whether the proxies are healthy and capable of routing to different domains,
 
 对于proxy是否可以route我们的信息到期待的目的地，可以在每个cluster加一个pod，里面有一个service叫做 prob service. 我们在独立于k8s外的服务器上，去链接这些prob service, 看是否能通过这个prob pod去与本cluster内部的pod去沟通，或者说cross datacenter的沟通。
+
+
+### 随着我们service Mesh的完善，我们开始迁移更多的项目到k8s上。
+
+我们的dev team把一些mission crital 的项目从 REST 迁移到了 gRPC 上。
+
+| 对比 | payload | server 之间交流 | 传输速度 | HTTP Version | 
+| ------ | ------ | ------ | ------ | ------ |
+| Rest | Json | - For every REST call between the services, a new connection is established and there is the overhead of SSL handshake. This would cause an increase in overall latency. | JSON payloads are simple messages that have relatively slower serialization and deserialization performance. | HTTP 1.1 | 
+| gRPC | Protobufs |Reuse connection, reducing the latency of creating new connections for each request  | Protobufs as payload has better serialization/deserialization into binary format. | HTTP/2| 
+
+
+### CI/CD gRPC project
+1. Write service and request and response definitions in the form of protobufs.
+2. Validate the protobuf files before using them to generate code for implementing clients.
+3. Implement the server and client(s).
+
+Cycle如下：
+1. Push protocol buffer to code repo. (pre push rule check)
+2. 用 prototool 去validate这个新加入的文件 (CI stage)
+3. Create release tags in the git repository from the master for the changes.
+4. Fetch proto files from code repo and implement to client & server
+5. 用proto gen doc去generate文档
