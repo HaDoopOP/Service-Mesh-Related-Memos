@@ -15,10 +15,13 @@ Service mesh is analogous to the TCP/IP network stack at a functional level. In 
 
 Service Mesh的好处如下
 
-> Smarter, performant, and concurrent load balancing。 
-> Platform and protocol agnostic routing, with HTTP and HTTP/2 (with focus on gRPC) as requirements。 
-> Application independent routing and tracing metrics。 
-> Traffic security。 
+> Smarter, performant, and concurrent load balancing
+
+> Platform and protocol agnostic routing, with HTTP and HTTP/2 (with focus on gRPC) as requirements
+
+> Application independent routing and tracing metrics
+
+> Traffic security
 
 
 service discovery 可以告诉某一个pod，它的request可以分流给哪几个pod。service mesh proxy handles the load balancing using a list of available destinations acquired through service discovery.
@@ -31,3 +34,4 @@ service discovery 可以告诉某一个pod，它的request可以分流给哪几�
 | ------ | ------ | ------ | ------ |
 | *SideCar Pattern* | 更费机器资源，每个pod都有额外开销  | if the proxy (sidecar) needs to be updated, the entire pod must be restarted/recreated for that change to take effect| 快 |
 | *DaemonSet Proxy Pattern* | 一个cluster用一个大的proxy，省资源 | updating one container won’t interrupt the others execution, and lowers the risk of inadvertent issues and downtime.| 慢，需要goes through a hostname resolution |
+
