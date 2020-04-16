@@ -84,3 +84,21 @@ Cycle如下：
 3. Create release tags in the git repository from the master for the changes.
 4. Fetch proto files from code repo and implement to client & server
 5. 用proto gen doc去generate文档
+
+
+### HTTP/2 的优点
+
+1. Reuse Connection
+
+HTTP/2 can send multiple requests for data in parallel over a single TCP connection.
+This is the most advanced feature of the HTTP/2 protocol because it allows you to download web files asynchronously from one server. Most modern browsers limit TCP connections to one server.
+
+之前打开网页可能需要三次tcp connection, js file, css file and image. HTTP/2只需要一次，因为reuse 了 connection。
+
+2. HPack compression
+
+在中途把header 压缩了，最后在重新reconstruct出来 （Both client and server maintain a list of headers used in previous client-server requests.）
+
+3. Binary protocol
+
+把传输的文字都变成binary 了。
